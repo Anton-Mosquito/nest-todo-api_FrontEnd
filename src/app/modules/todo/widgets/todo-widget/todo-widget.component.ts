@@ -20,7 +20,10 @@ export class TodoWidgetComponent implements OnInit {
   ngOnInit(): void {
     this.todoList$ = this.todoServises.entities$;
     this.loading$ = this.todoServises.loading$.pipe(delay(500));
-    this.todoServises.getAll();
+    this.todoServises.getWithQuery({
+      'limit': '10',
+      'offset': '2'
+    });
   }
 
   onCreate(): void {

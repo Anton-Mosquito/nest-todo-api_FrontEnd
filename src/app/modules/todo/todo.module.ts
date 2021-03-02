@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TodoWidgetComponent } from './widgets/todo-widget/todo-widget.component';
 import { FormsModule } from '@angular/forms';
+import { EntityDataService } from '@ngrx/data';
+import { TodoCustomDataService } from './store/entities/custom-entity-data-service.service';
 
 
 
@@ -11,6 +13,14 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     FormsModule,
-  ]
+  ],
+  providers: [TodoCustomDataService]
 })
-export class TodoModule { }
+export class TodoModule {
+  constructor(
+    entityDataService: EntityDataService,
+    todoCustomDataService: TodoCustomDataService,
+  ) {
+    entityDataService.registerService('Todo', todoCustomDataService); // <-- register it
+  }
+}
