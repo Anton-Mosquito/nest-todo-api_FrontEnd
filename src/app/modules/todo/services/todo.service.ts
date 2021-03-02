@@ -49,7 +49,7 @@ export class TodoService {
   });
   }
 
-  public remove(id: number): void {
+  public delete(id: number): void {
     this.loading$.next(true);
     this.httpClient.delete<void>(`${BACKEND_BASE_DOMAIN}todo/${id}`).subscribe(() =>{
       this.todoList = this.todoList?.filter(todo=> todo.id !== id);

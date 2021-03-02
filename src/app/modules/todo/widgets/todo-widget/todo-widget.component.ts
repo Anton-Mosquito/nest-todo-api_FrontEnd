@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import {delay} from 'rxjs/operators';
 import { Todo } from '../../models/todo';
 import { TodoService } from '../../services/todo.service';
+import { TodoDataService } from '../../services/todoData.service';
 
 @Component({
   selector: 'app-todo-widget',
@@ -14,7 +15,7 @@ export class TodoWidgetComponent implements OnInit {
   public todoList$?: Observable<Todo[]>;
   public loading$?: Observable<boolean>;
 
-  constructor(private todoServises: TodoService){}
+  constructor(private todoServises: TodoDataService){}
 
   ngOnInit(): void {
     this.todoList$ = this.todoServises.entities$;
@@ -24,16 +25,25 @@ export class TodoWidgetComponent implements OnInit {
 
   onCreate(): void {
     if (this.title) {
-      this.todoServises.add(this.title);
+      this.todoServises.add({
+        id: null,
+        title : this.title,
+        isComplited: false,
+      });
       this.title = '';
     }
   }
 
   onRemove(todo: Todo): void {
-    this.todoServises.remove(todo.id);
+    if (todo.id) {
+      this.todoServises.delete(todo.id);
+    }
   }
 
   onCompleted(todo: Todo): void {
-    this.todoServises.update(todo);
+    this.todoServises.update({
+      ...todo,
+      isComplited: !todo.isComplited
+    });
   }
 }
