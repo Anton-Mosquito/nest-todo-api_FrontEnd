@@ -1,7 +1,8 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Todo } from 'src/app/models/todo';
-import { BACKEND_BASE_DOMAIN } from 'src/env';
+import { Observable } from 'rxjs';
+import {delay} from 'rxjs/operators';
+import { Todo } from '../../models/todo';
+import { TodoService } from '../../services/todo.service';
 
 @Component({
   selector: 'app-todo-widget',
@@ -10,41 +11,29 @@ import { BACKEND_BASE_DOMAIN } from 'src/env';
 })
 export class TodoWidgetComponent implements OnInit {
   public title = "";
-  public todoList?: Todo[];
+  public todoList$?: Observable<Todo[]>;
+  public loading$?: Observable<boolean>;
 
-  constructor(private httpClient: HttpClient){}
+  constructor(private todoServises: TodoService){}
 
   ngOnInit(): void {
-    this.httpClient.get<Todo[]>(BACKEND_BASE_DOMAIN + 'todo').subscribe(todoList=>{
-      this.todoList = todoList;
-    })
+    this.todoList$ = this.todoServises.entities$;
+    this.loading$ = this.todoServises.loading$.pipe(delay(500));
+    this.todoServises.getAll();
   }
 
   onCreate(): void {
     if (this.title) {
-      this.httpClient.post<Todo>(BACKEND_BASE_DOMAIN + 'todo', {
-        "title": this.title,
-      }).subscribe( todo =>{
-        this.todoList?.push(todo);
-
-      });
+      this.todoServises.add(this.title);
       this.title = '';
     }
   }
 
-  onRemove(todoOnDelete: Todo): void {
-    this.httpClient.delete<void>(`${BACKEND_BASE_DOMAIN}todo/${todoOnDelete.id}`).subscribe(() =>{
-      this.todoList = this.todoList?.filter(todo=> todo.id !== todoOnDelete.id)
-    });
+  onRemove(todo: Todo): void {
+    this.todoServises.remove(todo.id);
   }
 
-  onCompleted(todoOnCompleted: Todo): void {
-    this.httpClient.patch<Todo>(`${BACKEND_BASE_DOMAIN}todo/${todoOnCompleted.id}`,
-      {
-        isComplited: !todoOnCompleted.isComplited
-      }
-    ).subscribe((updateTodo: Todo) =>{
-      this.todoList = this.todoList?.map((todo)=> todo.id !== todoOnCompleted.id ? todo : updateTodo)
-    });
+  onCompleted(todo: Todo): void {
+    this.todoServises.update(todo);
   }
 }
